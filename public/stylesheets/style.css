@@ -1,8 +1,27 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+/*body {*/
+/*  padding: 50px;*/
+/*  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;*/
+/*}*/
+
+/*a {*/
+/*  color: #00B7FF;*/
+/*}*/
+
+#navbarSupportedContent {
+  justify-content: flex-end;
 }
 
-a {
-  color: #00B7FF;
+.list-group-item {
+  text-align: center;
+  border: none;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.card {
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
