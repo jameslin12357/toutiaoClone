@@ -1,0 +1,13 @@
+tables
+- user (guid, email, username, password, bio, created, edited)
+- video (guid, title, description, src, created, edited, userid)
+- comment (guid, body, created, edited, userid, videoid)
+- topic (guid, title, description, created, edited)
+- like (guid, userid, videoid, created, edited)
+- userfollowing (guid, userid, userid, created, edited)
+- topicfollowing (guid, userid, topicid, created, edited)
+
+enter data
+
+
+
