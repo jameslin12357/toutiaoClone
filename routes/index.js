@@ -22,6 +22,24 @@ function queryDB(sqlString,f){
   connection.end();
 }
 
+function queryDBMulti(sqlString,f){
+  var connection = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'root',
+    password : 'LYGUber445',
+    database : 'toutiaoClone',
+    multipleStatements: true
+  });
+  connection.connect();
+  connection.query(sqlString, function (error, results, fields) {
+    if (error) throw error;
+    //console.log('The solution is: ', results);
+    f(results);
+    return results;
+  });
+  connection.end();
+}
+
 
 // if there is no session setup session (generate values and
 // insert into redis and request object ) and proceed to controllers
@@ -189,11 +207,75 @@ router.get('/videos/funny', sessionSetup, function(req, res, next) {
 });
 
 router.get('/videos', function(req, res, next) {
-  queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = ${req.query.topicid} group by v.id order by v.created desc limit 10 offset ${req.query.offset};`,
-      function (results) {
-        res.json(results);
-      });
+    queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = ${req.query.topicid} group by v.id order by v.created desc limit 10 offset ${req.query.offset};`,
+        function (results) {
+            res.json(results);
+        });
 });
+
+// whether user is logged in or not display
+// all topics as a board
+router.get('/topics', sessionSetup, function(req, res, next) {
+  queryDB("select * from topics;",
+      function(results){
+        res.render('topics/index', {
+          title: '话题',
+          req: req,
+          results: results,
+          moment: moment
+        });});
+});
+
+
+
+// whether user is logged in or not display
+// topic detail page which by default includes
+// 10 videos of this topic and ajax scroll effect
+// when user scrolls to bottom gets more videos
+// if user clicks on followers tab then opens
+// a new page and by default gets 10 followers
+// and when user scrolls to bottom gets more followers
+// or clears current data, switches tab, gets
+// data and update DOM and binds events
+router.get('/topics/:id', sessionSetup, function(req, res, next) {
+  var id = req.params.id;
+  queryDBMulti( `select t.id, t.title, t.description, t.src from topics t where t.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as followersCount from topicfollowing where followed = '${id}';select * from topicfollowing where following = '${req.session.id}' and followed = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('topics/show', {
+        title: '话题',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/404',function(req,res,next){
+  res.render('errors/404');
+});
+  // queryDB(`select t.id, t.title, t.description, t.src, 1,2,3,4,5 from topics t where t.id = '${req.params.id}' union select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count, count(*) as videoCount from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = '${req.params.id}' group by v.id order by v.created desc limit 10 union select count(*) as followersCount,1,2,3,4,5,6,7,8 from topicfollowing where followed = '${req.params.id}'`,
+  //     function (results) {
+  //     if (results.length === 0){
+  //       res.redirect('/404');
+  //     } else {
+  //       res.json(results);
+  //     }
+  //     });
+
 
 
 module.exports = router;
