@@ -13,11 +13,11 @@ $(window).scroll(function() {
         if($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
             active = false;
             var offset = document.getElementsByClassName("card").length;
-            var topicid = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
+            var userid = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
 
             $.ajax({
                 type: "get",
-                url: `/videos?topicid=${topicid}&offset=${offset}`,
+                url: `/videos2?userid=${userid}&offset=${offset}`,
                 //url: `https://ditu.amap.com/detail/${poiId}/?src=mypage&callnative=0`,
                 dataType: "json",
                 success: function (data) {
@@ -103,5 +103,5 @@ if (document.getElementById('linkLogout')){
                 }
             });
         }
-        });
+    });
 }

@@ -29,17 +29,25 @@ connection.connect();
 //   });
 // }
 
-for(var i = 0; i < 1000; i++) {
-  var randomBody = faker.lorem.sentence();
-  var randomUserId = Math.floor(Math.random() * 1000) + 1;
-  var randomVideoId = Math.floor(Math.random() * 1000) + 1;
-  connection.query(`insert into comments (body, userid, videoid) values ('${randomBody}','${randomUserId}', '${randomVideoId}')`, function (error, results, fields) {
+// for(var i = 0; i < 1000; i++) {
+//   var randomBody = faker.lorem.sentence();
+//   var randomUserId = Math.floor(Math.random() * 1000) + 1;
+//   var randomVideoId = Math.floor(Math.random() * 1000) + 1;
+//   connection.query(`insert into comments (body, userid, videoid) values ('${randomBody}','${randomUserId}', '${randomVideoId}')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
+
+for(var i = 0; i < 100; i++) {
+  var randomTitle = faker.lorem.sentence();
+  var randomDescription = faker.lorem.sentence();
+  var randomTopicId = Math.floor(Math.random() * 10) + 1;
+  connection.query(`insert into videos (title, description, src, userid, topicid) values ('${randomTitle}','${randomDescription}','http://www.mazwai.com/#/grid/videos/148', '1008', '${randomTopicId}')`, function (error, results, fields) {
     if (error) throw error;
     console.log('The solution is: ', results);
   });
 }
-
-
 
 connection.end();
 

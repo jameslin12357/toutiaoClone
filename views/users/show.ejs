@@ -10,29 +10,27 @@
 
                 </div>
                 <div class="mt-10">
-                    <h5 class="card-title mb-0"><%= results[0][0].title %></h5>
+                    <h5 class="card-title mb-0"><%= results[0][0].username %></h5>
 
 
                     <div>
-                        <span class="gray"><%= results[0][0].description %></span>
-
+                        <span class="gray"><%= results[0][0].bio %></span>
+                        <span class="gray"><%= moment(results[0][0].created ).format('YYYY MMMM Do') %>加入</span>
                     </div>
                 </div>
 
             </div>
             <div class="text-center mb-10">
-                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>"><span class="gray active"><%= results[2][0].videosCount %>视频</span></a>
-                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>/followers"><span class="gray"><span id="topicfollowerscount"><%= results[3][0].followersCount %></span>粉丝</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>"><span class="gray active"><%= results[2][0].videosCount %>视频</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/topics"><span class="gray"><%= results[3][0].topicsCount %>话题</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/following"><span class="gray"><%= results[4][0].followingCount %>关注的人</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/followers"><span class="gray"><span id="userfollowerscount"><%= results[5][0].followersCount %></span>粉丝</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/comments"><span class="gray"><%= results[6][0].commentsCount %>评论</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/likes"><span class="gray"><%= results[7][0].likesCount %>点赞</span></a>
+
             </div>
             <div class="text-center mb-10">
-                <% if (req.session.isAuthenticated === "true") { %>
-                    <% if (results[4].length === 0) { %>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">关注</button>
 
-                        <% } else { %>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">取消关注</button>
-                        <% } %>
-                    <% } %>
             </div>
         </div>
         <div class="col-md-8 offset-md-2">
@@ -79,7 +77,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
-<script src="/javascripts/topics/site.js"></script>
+<script src="/javascripts/users/site.js"></script>
 
 </body>
 </html>

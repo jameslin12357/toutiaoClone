@@ -20,6 +20,22 @@
   margin-top: 10px;
 }
 
+.mt-50 {
+  margin-top: 50px;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mb-15 {
+  margin-bottom: 15px;
+}
+
 .pt-20 {
   padding-top: 20px;
 }
@@ -30,6 +46,10 @@
 
 .mr-15 {
   margin-right: 15px;
+}
+
+.ml-13 {
+  margin-left: 13px;
 }
 
 .mr-5px {
@@ -83,4 +103,35 @@ a:hover {
   #navLeft {
     margin-left: 15px;
   }
+}
+
+.jc-center {
+  justify-content: center;
+}
+
+.jc-end {
+  justify-content: end;
+}
+
+span.active {
+  padding: 3px;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.hoverNoEffect:hover{
+  text-decoration: none;
+}
+
+.fr {
+  float: right;
+}
+
+.clRed {
+  color: red;
+}
+
+.ai-center {
+  align-items: center;
 }

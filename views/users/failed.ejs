@@ -1,0 +1,43 @@
+<% include ../partials/header %>
+
+<div class="container">
+    <div class="row mt-50">
+        <div class="col-md-4 offset-md-4">
+            <h2 class="text-center mb-15">注册</h2>
+            <form action="/register" method="post">
+                <div class="form-group">
+                    <input type="email" class="form-control" name="email" value="<%= inputs["email"] %>" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="输入邮箱" required>
+                </div>
+                <% if (errors.includes(1)) { %>
+                    <div class="clRed mb-10 ml-13">邮箱不能为空</div>
+                <% } %>
+                <% if (errors.includes(4)) { %>
+                    <div class="clRed mb-10 ml-13">邮箱格式无效</div>
+                <% } %>
+                <div class="form-group">
+                    <div><input type="password" class="form-control" name="password" id="exampleInputPassword1" placeholder="输入密码" required></div>
+                </div>
+                <% if (errors.includes(2)) { %>
+                    <div class="clRed mb-10 ml-13">密码不能为空</div>
+                <% } %>
+                <% if (errors.includes(5)) { %>
+                    <div class="clRed mb-10 ml-13">密码长度不能低于八位数</div>
+                <% } %>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="username" value="<%= inputs["username"] %>" id="exampleInputPassword1" placeholder="输入用户名" required>
+                </div>
+                <% if (errors.includes(3)) { %>
+                    <div class="clRed mb-10 ml-13">用户名不能为空</div>
+                <% } %>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">注册</button>
+                </div>
+            </form>
+            <div class="text-center">
+                登录/注册即表示你同意<a href="#">用户协议</a>和<a href="#">隐私条款</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% include ../partials/footer %>

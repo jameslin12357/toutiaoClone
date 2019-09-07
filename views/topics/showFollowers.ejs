@@ -21,46 +21,21 @@
 
             </div>
             <div class="text-center mb-10">
-                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>"><span class="gray active"><%= results[2][0].videosCount %>视频</span></a>
-                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>/followers"><span class="gray"><span id="topicfollowerscount"><%= results[3][0].followersCount %></span>粉丝</span></a>
-            </div>
-            <div class="text-center mb-10">
-                <% if (req.session.isAuthenticated === "true") { %>
-                    <% if (results[4].length === 0) { %>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">关注</button>
-
-                        <% } else { %>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">取消关注</button>
-                        <% } %>
-                    <% } %>
+                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>"><span class="gray"><%= results[2][0].videosCount %>视频</span></a>
+                <a class="hoverNoEffect" href="/topics/<%= results[0][0].id %>/followers"><span class="gray active"><%= results[3][0].followersCount %>粉丝</span></a>
             </div>
         </div>
         <div class="col-md-8 offset-md-2">
             <div class="mt-10" id="wrapperCard">
                 <% for(var i=0; i<results[1].length; i++) {%>
                     <div class="card">
-
                         <div class="card-body flex">
-                            <div class="mr-15">
-                                <video controls class="videoList" poster="/images/poster.png">
-
-                                    <source src="<%= results[1][i].videosrc %>"
-                                            type="video/mp4">
-                                </video>
-                            </div>
                             <div class="pt-20">
-                                <a class="black" href="/videos/<%= results[1][i].videoid %>"><h5 class="card-title"><%= results[1][i].title %></h5></a>
-
-
                                 <div>
                                     <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><img class="profileList" src="<%= results[1][i].src %>"></a>
-                                    <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><%= results[1][i].username %></a>
-                                    <span class="gray"><%= results[1][i].count %>评论</span>
-                                    <span class="gray"><%= moment(results[1][i].created ).startOf('hour').fromNow() %></span>
-
+                                    <a class="gray" href="/users/<%= results[1][i].id %>"><%= results[1][i].username %></a>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 <% } %>
@@ -79,7 +54,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
-<script src="/javascripts/topics/site.js"></script>
+<script src="/javascripts/topics/site2.js"></script>
 
 </body>
 </html>

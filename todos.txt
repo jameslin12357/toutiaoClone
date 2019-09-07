@@ -9,5 +9,9 @@ tables
 
 enter data
 
+user
+video
+logout
+search
 
 
