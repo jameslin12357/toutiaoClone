@@ -20,8 +20,58 @@
   margin-top: 10px;
 }
 
+.pt-20 {
+  padding-top: 20px;
+}
+
+.mr-15 {
+  margin-right: 15px;
+}
+
+.mr-5px {
+  margin-right: 5px;
+}
+
 .card {
   border-top: none;
   border-left: none;
   border-right: none;
+}
+
+.black {
+  color: black;
+}
+
+.gray {
+  color: gray;
+}
+
+a:hover {
+  color: black;
+}
+
+.profileList {
+  width: 25px;
+  height: 25px;
+}
+
+.videoList {
+  width: 150px;
+  height: 100px;
+}
+
+.flex {
+  display: flex;
+}
+
+#navLeft {
+  position: fixed;
+
+  top: 86px;
+}
+
+@media only screen and (min-width: 992px) {
+  #navLeft {
+    margin-left: 15px;
+  }
 }
