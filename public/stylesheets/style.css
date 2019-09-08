@@ -135,3 +135,24 @@ span.active {
 .ai-center {
   align-items: center;
 }
+
+.hidden {
+  display: none!important;
+}
+
+.fr {
+  float: right;
+}
+
+.blackrgba {
+  color: rgba(0,0,0,.9);
+}
+
+.pt-150 {
+  padding-top: 150px;
+}
+
+.mr-neg5 {
+  margin-right: -5px;
+}
+

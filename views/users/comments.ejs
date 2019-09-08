@@ -21,32 +21,13 @@
 
             </div>
             <div class="text-center mb-10">
-                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>"><span class="gray active"><%= results[2][0].videosCount %>视频</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>"><span class="gray"><%= results[2][0].videosCount %>视频</span></a>
                 <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/topics"><span class="gray"><%= results[3][0].topicsCount %>话题</span></a>
                 <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/following"><span class="gray"><%= results[4][0].followingCount %>关注的人</span></a>
                 <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/followers"><span class="gray"><span id="userfollowerscount"><%= results[5][0].followersCount %></span>粉丝</span></a>
-                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/comments"><span class="gray"><%= results[6][0].commentsCount %>评论</span></a>
+                <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/comments"><span class="gray active"><%= results[6][0].commentsCount %>评论</span></a>
                 <a class="hoverNoEffect" href="/users/<%= results[0][0].id %>/likes"><span class="gray"><%= results[7][0].likesCount %>点赞</span></a>
 
-            </div>
-            <div class="text-center mb-10">
-                <% if (req.session.isAuthenticated === "true" && (req.session.id !== String(results[0][0].id))) { %>
-                    <span id="special" class="hidden"></span>
-                    <% if (results[8].length === 0) { %>
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">关注</button>
-
-                    <% } else { %>
-                        <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">取消关注</button>
-                    <% } %>
-                <% } %>
-                    <% if (req.session.isAuthenticated === "true" && (req.session.id === String(results[0][0].id))) { %>
-                        <span id="special2" class="hidden"></span>
-
-                        <a href="/users/<%= results[0][0].id %>/edit" class="btn btn-outline-primary btn-sm" data-userid="<%= req.session.id %>" role="button">编辑</a>
-
-                            <button type="button" id="buttonDelete" class="btn btn-outline-danger btn-sm" data-userid="<%= req.session.id %>">删除</button>
-
-                    <% } %>
             </div>
         </div>
         <div class="col-md-8 offset-md-2">
@@ -54,22 +35,13 @@
                 <% for(var i=0; i<results[1].length; i++) {%>
                     <div class="card">
 
-                        <div class="card-body flex">
-                            <div class="mr-15">
-                                <video controls class="videoList" poster="/images/poster.png">
+                        <div class="card-body flex ai-center">
 
-                                    <source src="<%= results[1][i].videosrc %>"
-                                            type="video/mp4">
-                                </video>
-                            </div>
-                            <div class="pt-20">
-                                <a class="black" href="/videos/<%= results[1][i].videoid %>"><h5 class="card-title"><%= results[1][i].title %></h5></a>
+                            <div class="mt-10">
+                                <h5 class="card-title mb-0"><%= results[1][i].body %></h5>
 
 
                                 <div>
-                                    <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><img class="profileList" src="<%= results[1][i].src %>"></a>
-                                    <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><%= results[1][i].username %></a>
-                                    <span class="gray"><%= results[1][i].count %>评论</span>
                                     <span class="gray"><%= moment(results[1][i].created ).startOf('hour').fromNow() %></span>
 
                                 </div>
@@ -93,7 +65,8 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
-<script src="/javascripts/users/site.js"></script>
+<script src="/javascripts/users/site4.js"></script>
+
 
 </body>
 </html>

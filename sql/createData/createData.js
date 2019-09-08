@@ -39,15 +39,48 @@ connection.connect();
 //   });
 // }
 
-for(var i = 0; i < 100; i++) {
-  var randomTitle = faker.lorem.sentence();
-  var randomDescription = faker.lorem.sentence();
-  var randomTopicId = Math.floor(Math.random() * 10) + 1;
-  connection.query(`insert into videos (title, description, src, userid, topicid) values ('${randomTitle}','${randomDescription}','http://www.mazwai.com/#/grid/videos/148', '1008', '${randomTopicId}')`, function (error, results, fields) {
-    if (error) throw error;
-    console.log('The solution is: ', results);
-  });
-}
+// for(var i = 0; i < 100; i++) {
+//   var randomTitle = faker.lorem.sentence();
+//   var randomDescription = faker.lorem.sentence();
+//   var randomTopicId = Math.floor(Math.random() * 10) + 1;
+//   connection.query(`insert into videos (title, description, src, userid, topicid) values ('${randomTitle}','${randomDescription}','http://www.mazwai.com/#/grid/videos/148', '1008', '${randomTopicId}')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
+
+// for(var i = 0; i < 500; i++) {
+//   var randomId = Math.floor(Math.random() * 1000) + 1;
+//   connection.query(`insert into userfollowing (following,followed) values ('1008','${randomId}')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
+
+// for(var i = 0; i < 500; i++) {
+//   var randomId = Math.floor(Math.random() * 1000) + 1;
+//   connection.query(`insert into userfollowing (following,followed) values ('${randomId}','1008')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
+
+// for(var i = 0; i < 500; i++) {
+//   var randomBody = faker.lorem.sentence();
+//   var randomVideoId = Math.floor(Math.random() * 1000) + 1;
+//   connection.query(`insert into comments (body, userid, videoid) values ('${randomBody}',1008, '${randomVideoId}')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
+
+// for(var i = 0; i < 500; i++) {
+//   var randomVideoId = Math.floor(Math.random() * 1000) + 1;
+//   connection.query(`insert into likes (userid, videoid) values (1008, '${randomVideoId}')`, function (error, results, fields) {
+//     if (error) throw error;
+//     console.log('The solution is: ', results);
+//   });
+// }
 
 connection.end();
 

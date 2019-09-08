@@ -13,11 +13,12 @@ $(window).scroll(function() {
         if($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
             active = false;
             var offset = document.getElementsByClassName("card").length;
-            var topicid = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
+            var part = window.location.pathname.slice(0,window.location.pathname.lastIndexOf('/'));
+            var userid = part.slice(part.lastIndexOf('/')+1);
 
             $.ajax({
                 type: "get",
-                url: `/videos?topicid=${topicid}&offset=${offset}`,
+                url: `/users4?userid=${userid}&offset=${offset}`,
                 //url: `https://ditu.amap.com/detail/${poiId}/?src=mypage&callnative=0`,
                 dataType: "json",
                 success: function (data) {
@@ -27,7 +28,7 @@ $(window).scroll(function() {
                         var wrapperCard = document.getElementById('wrapperCard');
                         var innerHTML = "";
                         data.forEach(function(video){
-                            innerHTML += `     <div class="card">
+                            innerHTML += `       <div class="card">
 
           <div class="card-body flex">
             <div class="mr-15">
@@ -52,6 +53,8 @@ $(window).scroll(function() {
 
           </div>
         </div>`;
+
+
                         });
                         wrapperCard.innerHTML += innerHTML;
                         active = true;
@@ -65,44 +68,4 @@ $(window).scroll(function() {
     }
 
 });
-
-if (document.getElementById('linkLogout')){
-    var buttonFollow = document.getElementById('buttonFollow');
-    buttonFollow.addEventListener("click", function(e){
-        var userid = e.target.getAttribute("data-userid");
-        var topicid = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
-        var text = e.target.innerText;
-        if (text === "关注"){
-            $.ajax({
-                type: "post",
-                url: `/topicfollowings`,
-                data: { "userid":userid, "topicid":topicid},
-                dataType: "json",
-                success: function (data) {
-                    e.target.innerText = "取消关注";
-                    document.getElementById('topicfollowerscount').innerText = String(Number(document.getElementById('topicfollowerscount').innerText)+1);
-                    layer.msg("已关注话题");
-                },
-                error: function (item, err) {
-                    console.log(err);
-                }
-            });
-        } else {
-            $.ajax({
-                type: "post",
-                url: `/deletetopicfollowings`,
-                data: { "userid":userid, "topicid":topicid},
-                dataType: "json",
-                success: function (data) {
-                    e.target.innerText = "关注";
-                    document.getElementById('topicfollowerscount').innerText = String(Number(document.getElementById('topicfollowerscount').innerText)-1);
-                    layer.msg("已取消关注话题");
-                },
-                error: function (item, err) {
-                    console.log(err);
-                }
-            });
-        }
-        });
-}
 

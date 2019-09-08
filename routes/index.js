@@ -58,19 +58,22 @@ function sessionSetup(req, res, next){
     var id = false;
     var email = false;
     var username = false;
+    var src = false;
     var client = redis.createClient();
     client.HMSET(uuid, {
       "isAuthenticated": isAuthenticated,
       "id": id,
       "email": email,
-      "username": username
+      "username": username,
+      "src": src
     }, function(){
       client.quit();
       req.session = {
         "isAuthenticated": isAuthenticated,
         "id": id,
         "email": email,
-        "username": username
+        "username": username,
+        "src": src,
       }
       res.cookie('sid', uuid, { signed: false, maxAge: 60 * 1000, httpOnly: true });
       next();
@@ -233,6 +236,35 @@ router.get('/topicfollowers', sessionSetup, function(req, res, next) {
       });
 });
 
+router.get('/users', sessionSetup, function(req, res, next) {
+  queryDB(`select u.id, u.username, u.src from users u inner join userfollowing uf on uf.followed = u.id where uf.following = '${req.query.userid}' order by uf.created desc limit 10 offset ${req.query.offset};`,
+      function (results) {
+        res.json(results);
+      });
+});
+
+router.get('/users2', sessionSetup, function(req, res, next) {
+  queryDB(`select u.id, u.username, u.src from users u inner join userfollowing uf on uf.following = u.id where uf.followed = '${req.query.userid}' order by uf.created desc limit 10 offset ${req.query.offset};`,
+      function (results) {
+        res.json(results);
+      });
+});
+
+router.get('/users3', sessionSetup, function(req, res, next) {
+  queryDB(`select c.body, c.created from comments c where c.userid = '${req.query.userid}' order by c.created desc limit 10 offset ${req.query.offset};`,
+      function (results) {
+        res.json(results);
+      });
+});
+
+router.get('/users4', sessionSetup, function(req, res, next) {
+  queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.id in (select videoid from likes where userid = '${req.query.userid}') group by v.id order by v.created desc limit 10 offset ${req.query.offset};`,
+      function (results) {
+        res.json(results);
+      });
+});
+
+
 // whether user is logged in or not display
 // all topics as a board
 router.get('/topics', sessionSetup, function(req, res, next) {
@@ -322,9 +354,381 @@ router.post('/deletetopicfollowings', sessionSetup, function(req, res, next){
   }
 });
 
+router.post('/userfollowings', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    queryDB(`insert into userfollowing (following, followed) values ('${req.body.following}','${req.body.followed}')`,
+        function(results){
+          res.json(results);
+        });
+  }
+});
+
+router.post('/deleteuserfollowings', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    queryDB(`delete from userfollowing where following = '${req.body.following}' and followed = '${req.body.followed}'`,
+        function(results){
+          res.json(results);
+        });
+  }
+});
+
 router.get('/users/:id', sessionSetup, function(req, res, next){
   var id = req.params.id;
-  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.userid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.userid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';select * from userfollowing where following = '${req.session.id}' and followed = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      console.log(req.query);
+      res.render('users/show', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/users/:id/edit', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (String(req.session.id) !== id){
+        res.redirect('/403');
+      }
+      console.log(results);
+      res.render('users/edit', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.post('/users/:id/edit', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (String(req.session.id) !== id){
+        res.redirect('/403');
+      }
+      var email = req.body.email;
+      var password = req.body.password;
+      var username = req.body.username;
+      var bio = req.body.bio;
+      var errors = [];
+      if (email.length === 0){
+        errors.push(1);
+      }
+      if (password.length === 0){
+        errors.push(2);
+      }
+      if (username.length === 0){
+        errors.push(3);
+      }
+      if(validateEmail(email) === false){
+        errors.push(4);
+      }
+      if(password.length <= 8){
+        errors.push(5);
+      }
+      if (bio.length === 0){
+        errors.push(6);
+      }
+      if (errors.length !== 0){
+        res.render('users/failed2',{
+          title: '编辑',
+          req: req,
+          inputs: {
+            "email": email,
+            "username": username,
+            "bio": bio
+          },
+          errors: errors,
+          results: results
+        });
+      } else {
+        // clean data and insert into database and return login page with success popup
+        email = email.trim();
+        password = password.trim();
+        username = username.trim();
+        bio = bio.trim();
+        queryDB(`update users set email = '${email}', password = '${password}', username = '${username}', bio = '${bio}' where id = '${id}';`,
+            function(results){
+              queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.userid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';select * from userfollowing where following = '${req.session.id}' and followed = '${id}';`,function (results) {
+                if (results[0].length === 0){
+                  res.redirect('/404');
+                } else {
+                  // if (req.session.isAuthenticated){
+                  //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+                  //       function(results){
+                  //         res.render('topics/show', {
+                  //           title: '话题',
+                  //           req: req,
+                  //           results: results,
+                  //           moment: moment
+                  //         });}
+                  //   );
+                  // }
+                  res.render('users/showEdited', {
+                    title: '用户',
+                    req: req,
+                    results: results,
+                    moment: moment
+                  });
+                }
+              });
+        });
+      }
+    }
+  });
+});
+
+router.get('/users/delete/:id', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (String(req.session.id) !== id){
+        res.redirect('/403');
+      }
+      queryDBMulti( `delete from users where id = '${id}'`,function (results) {
+        var client = redis.createClient();
+        client.del(req.cookies.sid);
+        client.quit();
+        req.session = {
+          "isAuthenticated": false,
+          "id": false,
+          "email": false,
+          "username": false
+        };
+        res.cookie('sid', "", { signed: false, maxAge: 0, httpOnly: true });
+        res.render('errors/deletedProfile', {
+          title: '前往',
+          req: req,
+          moment: moment
+        });
+      });
+    }
+  });
+});
+
+router.get('/logout', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    var client = redis.createClient();
+    client.del(req.cookies.sid);
+    client.quit();
+    req.session = {
+      "isAuthenticated": false,
+      "id": false,
+      "email": false,
+      "username": false
+    };
+    res.cookie('sid', "", { signed: false, maxAge: 0, httpOnly: true });
+    res.render('errors/loggedout', {
+      title: '前往',
+      req: req,
+      moment: moment
+    });
+  }
+})
+
+router.get('/users/:id/topics', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select t.id, t.title, t.description, t.src from topics t inner join topicfollowing tf on t.id = tf.followed where tf.following = '${id}' order by tf.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('users/topics', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+// router.get('/users/:id/topics', sessionSetup, function(req, res, next){
+
+
+router.get('/users/:id/following', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select u.id, u.username, u.src from users u inner join userfollowing uf on uf.followed = u.id where uf.following = '${id}' order by uf.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('users/following', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/users/:id/followers', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select u.id, u.username, u.src from users u inner join userfollowing uf on uf.following = u.id where uf.followed = '${id}' order by uf.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('users/followers', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/users/:id/comments', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select c.body, c.created from comments c where c.userid = '${id}' order by c.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('users/comments', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/users/:id/likes', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.id in (select videoid from likes where userid = '${id}') group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      res.render('users/likes', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment
+      });
+    }
+  });
+});
+
+router.get('/videos/:id', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select v.id as videoid, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select * from comments where videoid = '${id}';select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';`,function (results) {
     if (results[0].length === 0){
       res.redirect('/404');
     } else {
@@ -340,15 +744,15 @@ router.get('/users/:id', sessionSetup, function(req, res, next){
       //   );
       // }
       console.log(results);
-      res.render('users/show', {
-        title: '用户',
+      res.render('videos/show', {
+        title: '视频',
         req: req,
         results: results,
         moment: moment
       });
     }
   });
-})
+});
 
 router.get('/register', sessionSetup, function(req, res, next){
   if (req.session.isAuthenticated === "true"){
@@ -449,7 +853,8 @@ router.post('/login', sessionSetup, function(req, res, next){
               "isAuthenticated": true,
               "id": results[0]["id"],
               "email": results[0]["email"],
-              "username": results[0]["username"]
+              "username": results[0]["username"],
+              "src": results[0]["src"]
             }, function(){
               client.quit();
               res.redirect("/");
@@ -462,6 +867,10 @@ router.post('/login', sessionSetup, function(req, res, next){
 
 router.get('/404', sessionSetup, function(req,res,next){
   res.render('errors/404');
+});
+
+router.get('/403', sessionSetup, function(req,res,next){
+  res.render('errors/403');
 });
   // queryDB(`select t.id, t.title, t.description, t.src, 1,2,3,4,5 from topics t where t.id = '${req.params.id}' union select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count, count(*) as videoCount from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = '${req.params.id}' group by v.id order by v.created desc limit 10 union select count(*) as followersCount,1,2,3,4,5,6,7,8 from topicfollowing where followed = '${req.params.id}'`,
   //     function (results) {

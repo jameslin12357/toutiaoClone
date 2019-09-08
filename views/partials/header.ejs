@@ -23,21 +23,22 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav">
-                <li class="nav-item">
+                <li class="nav-item mr-5px">
                     <a class="nav-link" href="/topics">话题</a>
                 </li>
                 <% if (req.session.isAuthenticated === "true") { %>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/users/<%= req.session.id %>"><%= req.session.username %></a>
+                    <li class="nav-item flex ai-center mr-5px">
+                        <a class="nav-link" href="/users/<%= req.session.id %>"><img class="mr-neg5 profileList" src="<%= req.session.src %>" class="card-img-top topicList" alt="..."></a>
+                        <a class="nav-link" id="currentUser" data-currentUser="<%= req.session.id %>" href="/users/<%= req.session.id %>"><%= req.session.username %></a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item mr-5px">
                         <a class="nav-link" href="/logout" id="linkLogout">退出</a>
                     </li>
                 <% } else { %>
-                    <li class="nav-item">
+                    <li class="nav-item mr-5px">
                         <a class="nav-link" href="/register">注册</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item mr-5px">
                         <a class="nav-link" href="/login">登陆</a>
                     </li>
                 <% } %>

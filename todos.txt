@@ -9,9 +9,9 @@ tables
 
 enter data
 
-user
+user x
 video
-logout
+logout x
 search
 
 

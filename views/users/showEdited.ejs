@@ -39,14 +39,14 @@
                         <button type="button" class="btn btn-outline-primary btn-sm" id="buttonFollow" data-userid="<%= req.session.id %>">取消关注</button>
                     <% } %>
                 <% } %>
-                    <% if (req.session.isAuthenticated === "true" && (req.session.id === String(results[0][0].id))) { %>
+                <% if (req.session.isAuthenticated === "true" && (req.session.id === String(results[0][0].id))) { %>
                         <span id="special2" class="hidden"></span>
 
                         <a href="/users/<%= results[0][0].id %>/edit" class="btn btn-outline-primary btn-sm" data-userid="<%= req.session.id %>" role="button">编辑</a>
 
-                            <button type="button" id="buttonDelete" class="btn btn-outline-danger btn-sm" data-userid="<%= req.session.id %>">删除</button>
+                    <button type="button" id="buttonDelete" class="btn btn-outline-danger btn-sm" data-userid="<%= req.session.id %>">删除</button>
 
-                    <% } %>
+                <% } %>
             </div>
         </div>
         <div class="col-md-8 offset-md-2">
@@ -94,6 +94,7 @@
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
 <script src="/javascripts/users/site.js"></script>
+<script src="/javascripts/users/site6.js"></script>
 
 </body>
 </html>
