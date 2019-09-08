@@ -5,13 +5,13 @@
         <div class="card">
 
             <div class="card-body">
-<!--                <div class="mr-15">-->
-                    <video controls="controls" class="videoDetail" poster="/images/poster.png">
+                <!--                <div class="mr-15">-->
+                <video controls="controls" class="videoDetail" poster="/images/poster.png">
 
-                        <source src="<%= results[0][0].videosrc %>"
-                                type="video/mp4">
-                    </video>
-<!--                </div>-->
+                    <source src="<%= results[0][0].videosrc %>"
+                            type="video/mp4">
+                </video>
+                <!--                </div>-->
                 <div class="pt-20">
                     <a class="black" href="/videos/<%= results[0][0].videoid %>"><h5 class="card-title"><%= results[0][0].videotitle %></h5></a>
                     <p><%= results[0][0].videodescription %></p>
@@ -21,7 +21,7 @@
                         <a class="gray mr-5px" href="/users/<%= results[0][0].userid %>"><%= results[0][0].username %></a>
                         <a class="gray mr-5px" href="/topics/<%= results[0][0].topicid %>"><%= results[0][0].title %></a>
 
-<!--                        <span class="gray mr-5px"><%= results[2][0].commentsCount %>评论</span>-->
+                        <!--                        <span class="gray mr-5px"><%= results[2][0].commentsCount %>评论</span>-->
                         <span class="gray mr-5px"><%= results[3][0].likesCount %>点赞</span>
 
                         <span class="gray"><%= moment(results[0][0].created ).startOf('hour').fromNow() %></span>
@@ -43,45 +43,45 @@
             </div>
         </div>
 
-                    <div class="col-md-8">
-                        <div class="mt-30" id="wrapperCard">
-                            <h5><span id="commentsCount"><%= results[2][0].commentsCount %></span>评论</h5>
-                            <% if (req.session.isAuthenticated === "true") { %>
-                                <div class="mt-20" id="formComment">
-                                    <img class="profileList mr-5px" src="/images/profile.png">
-                                    <input id="inputComment" class="mr-5px pd-10 w-400px" type="text" placeholder="请评论">
-                                    <button id="buttonComment" type="button" class="btn btn-outline-primary btn-sm pd-10" data-userid="<%= req.session.id %>">评论</button>
-
-                                </div>
-                            <% } %>
-                            <div id="wrapperCards">
-                            <% for(var i=0; i<results[1].length; i++) {%>
-                                <div class="card">
-
-                                    <div class="card-body flex ai-center">
-
-                                        <div class="mt-10">
-                                            <div class="mb-5px">
-                                                <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><img class="profileList" src="<%= results[1][i].src %>"></a>
-                                                <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><%= results[1][i].username %></a>
-                                                <span class="gray"><%= moment(results[1][i].created ).startOf('hour').fromNow() %></span>
-
-                                            </div>
-                                            <h5 class="card-title mb-0"><%= results[1][i].body %></h5>
-
-
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            <% } %>
-                            </div>
-                        </div>
+        <div class="col-md-8">
+            <div class="mt-30" id="wrapperCard">
+                <h5><span id="commentsCount"><%= results[2][0].commentsCount %></span>评论</h5>
+                <% if (req.session.isAuthenticated === "true") { %>
+                    <div class="mt-20" id="formComment">
+                        <img class="profileList mr-5px" src="/images/profile.png">
+                        <input id="inputComment" class="mr-5px pd-10 w-400px" type="text" placeholder="请评论">
+                        <button id="buttonComment" type="button" class="btn btn-outline-primary btn-sm pd-10" data-userid="<%= req.session.id %>">评论</button>
 
                     </div>
+                <% } %>
+                <div id="wrapperCards">
+                    <% for(var i=0; i<results[1].length; i++) {%>
+                        <div class="card">
+
+                            <div class="card-body flex ai-center">
+
+                                <div class="mt-10">
+                                    <div class="mb-5px">
+                                        <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><img class="profileList" src="<%= results[1][i].src %>"></a>
+                                        <a class="gray mr-5px" href="/users/<%= results[1][i].id %>"><%= results[1][i].username %></a>
+                                        <span class="gray"><%= moment(results[1][i].created ).startOf('hour').fromNow() %></span>
+
+                                    </div>
+                                    <h5 class="card-title mb-0"><%= results[1][i].body %></h5>
+
+
+
+                                </div>
+
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
             </div>
+
+        </div>
+    </div>
+</div>
 
 
 <script
@@ -93,6 +93,7 @@
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
 <script src="/javascripts/videos/site.js"></script>
+<script src="/javascripts/videos/site2.js"></script>
 
 </body>
 </html>

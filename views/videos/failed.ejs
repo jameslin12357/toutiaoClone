@@ -1,0 +1,28 @@
+<% include ../partials/header %>
+
+<div class="container">
+    <div class="row mt-50">
+        <div class="col-md-4 offset-md-4">
+            <h2 class="text-center mb-15">编辑视频</h2>
+            <form action="/videos/<%= results[0].id %>/edit" method="post">
+                <div class="form-group">
+                    <input type="text" class="form-control" name="title" value="<%= inputs["title"] %>" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="输入标题" required>
+                </div>
+                <% if (errors.includes(1)) { %>
+                    <div class="clRed mb-10 ml-13">标题不能为空</div>
+                <% } %>
+                <div class="form-group">
+                    <input type="text" class="form-control" name="description" value="<%= inputs["description"] %>" id="exampleInputPassword1" placeholder="输入描述" required>
+                </div>
+                <% if (errors.includes(2)) { %>
+                    <div class="clRed mb-10 ml-13">描述不能为空</div>
+                <% } %>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary btn-block">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<% include ../partials/footer %>
