@@ -192,3 +192,7 @@ span.active {
   background-color: #007bff!important;
   color: white!important;
 }
+
+.mt-30 {
+  margin-top: 30px;
+}

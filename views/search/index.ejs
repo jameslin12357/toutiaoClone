@@ -1,0 +1,95 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--  <head>-->
+<!--    <title><%= title %></title>-->
+<!--    <link rel='stylesheet' href='/stylesheets/style.css' />-->
+<!--  </head>-->
+<!--  <body>-->
+<!--    <h1><%= title %></h1>-->
+<!--    <p>Welcome to <%= title %></p>-->
+<!--  </body>-->
+<!--</html>-->
+<% include ../partials/header %>
+
+
+
+<div class="container">
+    <div class="card mt-30">
+
+
+        <div class="text-center mb-10">
+            <h5>视频</h5>
+        </div>
+
+    </div>
+    <div class="row">
+<!--        <div id="navLeft">-->
+<!--            <div class="list-group">-->
+<!--                <a href="/" class="list-group-item list-group-item-action">-->
+<!--                    推荐-->
+<!--                </a>-->
+<!--                <a href="/videos/hot" class="list-group-item list-group-item-action active">热点</a>-->
+<!--                <a href="/videos/live" class="list-group-item list-group-item-action">直播</a>-->
+<!--                <a href="/videos/tech" class="list-group-item list-group-item-action">科技</a>-->
+<!--                <a href="/videos/ent" class="list-group-item list-group-item-action">娱乐</a>-->
+<!--                <a href="/videos/games" class="list-group-item list-group-item-action">游戏</a>-->
+<!--                <a href="/videos/sports" class="list-group-item list-group-item-action">体育</a>-->
+<!--                <a href="/videos/cars" class="list-group-item list-group-item-action">汽车</a>-->
+<!--                <a href="/videos/finance" class="list-group-item list-group-item-action">财经</a>-->
+<!--                <a href="/videos/funny" class="list-group-item list-group-item-action">搞笑</a>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <div class="col-md-8 offset-md-2">
+            <div class="mt-10" id="wrapperCard">
+                <% for(var i=0; i<results.length; i++) {%>
+                    <div class="card">
+
+                        <div class="card-body flex">
+                            <div class="mr-15">
+                                <video controls class="videoList" poster="/images/poster.png">
+
+                                    <source src="<%= results[i].videosrc %>"
+                                            type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="pt-20">
+                                <a class="black" href="/videos/<%= results[i].videoid %>"><h5 class="card-title"><%= results[i].title %></h5></a>
+
+
+                                <div>
+                                    <a class="gray mr-5px" href="/users/<%= results[i].id %>"><img class="profileList" src="<%= results[i].src %>"></a>
+                                    <a class="gray mr-5px" href="/users/<%= results[i].id %>"><%= results[i].username %></a>
+                                    <span class="gray"><%= results[i].count %>评论</span>
+                                    <span class="gray"><%= moment(results[i].created ).startOf('hour').fromNow() %></span>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+<div id="space">
+
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
+<script src="/javascripts/moment.js"></script>
+<script src="/javascripts/search/site.js"></script>
+</body>
+</html>

@@ -139,6 +139,20 @@ router.get('/videos/hot', sessionSetup, function(req, res, next) {
         });});
 });
 
+router.get('/searchByIndex', sessionSetup, function(req, res, next) {
+  queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid group by v.id order by v.created desc limit 10 offset ${req.query.offset};`,
+      function(results){
+        res.json(results);
+  });
+});
+
+router.get('/searchByFiltered', sessionSetup, function(req, res, next) {
+  queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.title like '%${req.query.search}%' group by v.id order by v.created desc limit 10 offset ${req.query.offset};`,
+      function(results){
+        res.json(results);
+      });
+});
+
 router.get('/videos/live', sessionSetup, function(req, res, next) {
   queryDB("select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.topicid = '3' group by v.id order by v.created desc limit 10;",
       function(results){
@@ -676,18 +690,23 @@ router.post('/users/:id/edit', sessionSetup, function(req, res, next){
 
 router.get('/search', sessionSetup, function(req, res, next){
   if (req.query.search === ""){
-    queryDB(`select * from videos where `,
+    queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid group by v.id order by v.created desc limit 10;`,
         function(results){
-          var client = redis.createClient();
-          client.HMSET(req.cookies.sid, {
-            "userUpdated": true
-          }, function(){
-            client.quit();
-            res.redirect(`/users/${req.session.id}`);
-          });
-        });
+          res.render('search/index', {
+            title: '搜索',
+            req: req,
+            results: results,
+            moment: moment
+          });});
   } else {
-
+    queryDB(`select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.title like '%${req.query.search}%' group by v.id order by v.created desc limit 10;`,
+        function(results){
+          res.render('search/filtered', {
+            title: '搜索',
+            req: req,
+            results: results,
+            moment: moment
+          });});
   }
 });
 
