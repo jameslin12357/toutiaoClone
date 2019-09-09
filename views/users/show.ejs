@@ -47,6 +47,8 @@
                             <button type="button" id="buttonDelete" class="btn btn-outline-danger btn-sm" data-userid="<%= req.session.id %>">删除</button>
 
                     <% } %>
+
+
             </div>
         </div>
         <div class="col-md-8 offset-md-2">
@@ -97,6 +99,12 @@
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
 <script src="/javascripts/users/site.js"></script>
+<% if (userUpdated === "true") { %>
+    <script src="/javascripts/users/userUpdated.js"></script>
+<% } %>
+<% if (videoCreated === "true") { %>
+    <script src="/javascripts/users/videoCreated.js"></script>
+<% } %>
 <% if (videoDeleted === "true") { %>
     <script src="/javascripts/users/videoDeleted.js"></script>
 <% } %>

@@ -66,8 +66,12 @@ function sessionSetup(req, res, next){
       "email": email,
       "username": username,
       "src": src,
+      "sid": uuid,
+      "videoCreated": false,
       "videoUpdated": false,
-      "videoDeleted": false
+      "videoDeleted": false,
+      "userCreated": false,
+      "userUpdated": false,
     }, function(){
       client.quit();
       req.session = {
@@ -76,8 +80,12 @@ function sessionSetup(req, res, next){
         "email": email,
         "username": username,
         "src": src,
+        "sid": uuid,
+        "videoCreated": false,
         "videoUpdated": false,
-        "videoDeleted": false
+        "videoDeleted": false,
+        "userCreated": false,
+        "userUpdated": false,
       }
       res.cookie('sid', uuid, { signed: false, maxAge: 60 * 1000, httpOnly: true });
       next();
@@ -217,6 +225,59 @@ router.get('/videos/funny', sessionSetup, function(req, res, next) {
           results: results,
           moment: moment
         });});
+});
+
+router.get('/videos/new', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    res.render('videos/new', {
+      title: '创建',
+      req: req,
+      moment: moment
+    });
+  }
+});
+
+router.post('/videos', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    var title = req.body.title;
+    var description = req.body.description;
+    var errors = [];
+    if (title.length === 0){
+      errors.push(1);
+    }
+    if (description.length === 0){
+      errors.push(2);
+    }
+    if (errors.length !== 0){
+      res.render('videos/failed2',{
+        title: '添加',
+        req: req,
+        inputs: {
+          "title": title,
+          "description": description
+        },
+        errors: errors,
+      });
+    } else {
+      // clean data and insert into database and return login page with success popup
+      title = title.trim();
+      description = description.trim();
+      queryDB(`insert into videos (title, description, src, userid, topicid) values ('${title}','${description}','/videos/default.mp4','1008','1')`,
+          function(results){
+            var client = redis.createClient();
+            client.HMSET(req.cookies.sid, {
+              "videoCreated": true
+            }, function(){
+              client.quit();
+              res.redirect(`/users/${req.session.id}`);
+            });
+      });
+    }
+  }
 });
 
 router.get('/videos', sessionSetup, function(req, res, next) {
@@ -380,6 +441,28 @@ router.post('/deletetopicfollowings', sessionSetup, function(req, res, next){
   }
 });
 
+router.post('/likes', sessionSetup, function(req, res, next){
+    if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+    } else {
+        queryDB(`insert into likes (userid, videoid) values ('${req.body.userid}','${req.body.videoid}')`,
+            function(results){
+                res.json(results);
+            });
+    }
+});
+
+router.post('/deletelikes', sessionSetup, function(req, res, next){
+    if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+    } else {
+        queryDB(`delete from likes where userid = '${req.body.userid}' and videoid = '${req.body.videoid}'`,
+            function(results){
+                res.json(results);
+            });
+    }
+});
+
 router.post('/userfollowings', sessionSetup, function(req, res, next){
   if (req.session.isAuthenticated === "false"){
     res.redirect('/login');
@@ -419,24 +502,49 @@ router.get('/users/:id', sessionSetup, function(req, res, next){
       //         });}
       //   );
       // }
-      var videoDeleted = "";
-      var client = redis.createClient();
-      client.hgetall(req.cookies.sid, function (err, obj) {
-        videoDeleted = obj["videoDeleted"];
-        if (videoDeleted === "true"){
-          client.HMSET(req.cookies.sid, {
-            "videoDeleted": false
-          });
-        }
-        client.quit();
-        res.render('users/show', {
-          title: '用户',
-          req: req,
-          results: results,
-          moment: moment,
-          videoDeleted: videoDeleted
+      var userUpdated = req.session.userUpdated;
+      var videoCreated = req.session.videoCreated;
+      var videoDeleted = req.session.videoDeleted;
+      if (userUpdated === "true"){
+        var client = redis.createClient();
+        client.HMSET(req.cookies.sid, {
+          "userUpdated": false
         });
+        client.quit();
+      }
+      if (videoCreated === "true"){
+        var client = redis.createClient();
+        client.HMSET(req.cookies.sid, {
+          "videoCreated": false
+        });
+        client.quit();
+      }
+      if (videoDeleted === "true"){
+        var client = redis.createClient();
+        client.HMSET(req.cookies.sid, {
+          "videoDeleted": false
+        });
+        client.quit();
+      }
+      res.render('users/show', {
+        title: '用户',
+        req: req,
+        results: results,
+        moment: moment,
+        userUpdated: userUpdated,
+        videoCreated: videoCreated,
+        videoDeleted: videoDeleted
       });
+      // client.hgetall(req.cookies.sid, function (err, obj) {
+      //   console.log(obj);
+      //   videoDeleted = obj["videoDeleted"];
+      //   if (videoDeleted === "true"){
+      //     client.HMSET(req.cookies.sid, {
+      //       "videoDeleted": false
+      //     });
+      //   }
+      //   client.quit();
+      // });
     }
   });
 });
@@ -530,33 +638,57 @@ router.post('/users/:id/edit', sessionSetup, function(req, res, next){
         bio = bio.trim();
         queryDB(`update users set email = '${email}', password = '${password}', username = '${username}', bio = '${bio}' where id = '${id}';`,
             function(results){
-              queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.userid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';select * from userfollowing where following = '${req.session.id}' and followed = '${id}';`,function (results) {
-                if (results[0].length === 0){
-                  res.redirect('/404');
-                } else {
-                  // if (req.session.isAuthenticated){
-                  //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
-                  //       function(results){
-                  //         res.render('topics/show', {
-                  //           title: '话题',
-                  //           req: req,
-                  //           results: results,
-                  //           moment: moment
-                  //         });}
-                  //   );
-                  // }
-                  res.render('users/showEdited', {
-                    title: '用户',
-                    req: req,
-                    results: results,
-                    moment: moment
-                  });
-                }
+              var client = redis.createClient();
+              client.HMSET(req.cookies.sid, {
+                "userUpdated": true
+              }, function(){
+                client.quit();
+                res.redirect(`/users/${req.session.id}`);
               });
+              // queryDBMulti( `select u.id, u.email, u.username, u.src, u.bio, u.created from users u where u.id = '${id}';select v.id as videoid, v.title, v.src as videosrc, v.created, u.id, u.username, u.src, count(body) as count from videos v inner join users u on v.userid = u.id left join comments c on v.id = c.videoid where v.userid = '${id}' group by v.id order by v.created desc limit 10;select count(*) as videosCount from videos where userid = '${id}';select count(*) as topicsCount from topicfollowing where following = '${id}';select count(*) as followingCount from userfollowing where following = '${id}';select count(*) as followersCount from userfollowing where followed = '${id}';select count(*) as commentsCount from comments where userid = '${id}';select count(*) as likesCount from likes where userid = '${id}';select * from userfollowing where following = '${req.session.id}' and followed = '${id}';`,function (results) {
+              //   if (results[0].length === 0){
+              //     res.redirect('/404');
+              //   } else {
+              //     // if (req.session.isAuthenticated){
+              //     //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+              //     //       function(results){
+              //     //         res.render('topics/show', {
+              //     //           title: '话题',
+              //     //           req: req,
+              //     //           results: results,
+              //     //           moment: moment
+              //     //         });}
+              //     //   );
+              //     // }
+              //     res.render('users/showEdited', {
+              //       title: '用户',
+              //       req: req,
+              //       results: results,
+              //       moment: moment
+              //     });
+              //   }
+              // });
         });
       }
     }
   });
+});
+
+router.get('/search', sessionSetup, function(req, res, next){
+  if (req.query.search === ""){
+    queryDB(`select * from videos where `,
+        function(results){
+          var client = redis.createClient();
+          client.HMSET(req.cookies.sid, {
+            "userUpdated": true
+          }, function(){
+            client.quit();
+            res.redirect(`/users/${req.session.id}`);
+          });
+        });
+  } else {
+
+  }
 });
 
 router.get('/users/delete/:id', sessionSetup, function(req, res, next){
@@ -801,7 +933,7 @@ router.get('/users/:id/likes', sessionSetup, function(req, res, next){
 
 router.get('/videos/:id', sessionSetup, function(req, res, next){
   var id = req.params.id;
-  queryDBMulti( `select v.id as videoid, v.description as videodescription, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select c.body, c.created, u.id, u.username, u.src from comments c inner join users u on c.userid = u.id where videoid = '${id}' order by created desc limit 10;select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';`,function (results) {
+  queryDBMulti( `select v.id as videoid, v.description as videodescription, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select c.body, c.created, u.id, u.username, u.src from comments c inner join users u on c.userid = u.id where videoid = '${id}' order by created desc limit 10;select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';select * from likes where userid = '${req.session.id}' and videoid = '${id}';`,function (results) {
     if (results[0].length === 0){
       res.redirect('/404');
     } else {
@@ -816,24 +948,40 @@ router.get('/videos/:id', sessionSetup, function(req, res, next){
       //         });}
       //   );
       // }
-      var videoUpdated = "";
-      var client = redis.createClient();
-      client.hgetall(req.cookies.sid, function (err, obj) {
-        videoUpdated = obj["videoUpdated"];
-        if (videoUpdated === "true"){
-          client.HMSET(req.cookies.sid, {
-            "videoUpdated": false
-          });
-        }
-        client.quit();
-        res.render('videos/show', {
-          title: '视频',
-          req: req,
-          results: results,
-          moment: moment,
-          videoUpdated: videoUpdated
+      var videoUpdated = req.session.videoUpdated;
+      if (videoUpdated === "true"){
+        var client = redis.createClient();
+        client.HMSET(req.cookies.sid, {
+          "videoUpdated": false
         });
+        client.quit();
+      }
+      res.render('videos/show', {
+        title: '视频',
+        req: req,
+        results: results,
+        moment: moment,
+        videoUpdated: videoUpdated
       });
+
+      // var videoUpdated = "";
+      // var client = redis.createClient();
+      // client.hgetall(req.cookies.sid, function (err, obj) {
+      //   videoUpdated = obj["videoUpdated"];
+      //   if (videoUpdated === "true"){
+      //     client.HMSET(req.cookies.sid, {
+      //       "videoUpdated": false
+      //     });
+      //   }
+      //   client.quit();
+      //   res.render('videos/show', {
+      //     title: '视频',
+      //     req: req,
+      //     results: results,
+      //     moment: moment,
+      //     videoUpdated: videoUpdated
+      //   });
+      // });
 
 
         // client.HGET(req.cookies.sid, {
@@ -958,6 +1106,7 @@ router.post('/videos/:id/edit', sessionSetup, function(req, res, next){
 });
 
 
+
 router.get('/register', sessionSetup, function(req, res, next){
   if (req.session.isAuthenticated === "true"){
     res.redirect('/');
@@ -1017,23 +1166,32 @@ router.post('/register', sessionSetup, function(req, res, next){
       username = username.trim();
       queryDB(`insert into users (email, password, username) values ('${email}','${password}','${username}')`,
           function(results){
-            res.render('login/success', {
-              title: '登陆',
-              req: req
-            });});
-    }
-  }
-});
+            var client = redis.createClient();
+            client.HMSET(req.cookies.sid, {
+              "userCreated": true
+            }, function() {
+              client.quit();
+              res.redirect(`/login`);
+            });});}}});
 
 // if user is logged out return login page else redirect to /
 router.get('/login', sessionSetup, function(req, res, next){
   if (req.session.isAuthenticated === "true"){
     res.redirect('/');
   } else {
+    var userCreated = req.session.userCreated;
+    if (userCreated === "true"){
+      var client = redis.createClient();
+      client.HMSET(req.cookies.sid, {
+        "userCreated": false
+      });
+      client.quit();
+    }
     res.render('login/new', {
       title: '登陆',
       req: req,
-      moment: moment
+      moment: moment,
+      userCreated: userCreated
     });
   }
 });

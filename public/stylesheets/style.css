@@ -187,3 +187,8 @@ span.active {
 #space {
   height: 150px;
 }
+
+.liked {
+  background-color: #007bff!important;
+  color: white!important;
+}

@@ -32,6 +32,9 @@
                         <a class="nav-link" id="currentUser" data-currentUser="<%= req.session.id %>" href="/users/<%= req.session.id %>"><%= req.session.username %></a>
                     </li>
                     <li class="nav-item mr-5px">
+                        <a class="nav-link" href="/videos/new" id="linkLogout">创建</a>
+                    </li>
+                    <li class="nav-item mr-5px">
                         <a class="nav-link" href="/logout" id="linkLogout">退出</a>
                     </li>
                 <% } else { %>
@@ -61,8 +64,8 @@
                 <!--        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>-->
                 <!--      </li>-->
             </ul>
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="请输入要搜索的内容" aria-label="搜索">
+            <form action='/search' method='get' class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="text" placeholder="请输入要搜索的内容" aria-label="搜索" name="search">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
             </form>
         </div>

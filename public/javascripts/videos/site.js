@@ -60,22 +60,22 @@ $(window).scroll(function() {
 
 });
 
-if (document.getElementById('linkLogout') && document.getElementById('special')){
-    var buttonFollow = document.getElementById('buttonFollow');
-    buttonFollow.addEventListener("click", function(e){
-        var following = e.target.getAttribute("data-userid");
-        var followed = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
-        var text = e.target.innerText;
-        if (text === "关注"){
+if (document.getElementById('linkLogout')){
+    var buttonLike = document.getElementById('buttonLike');
+    buttonLike.addEventListener("click", function(e){
+        var userid = e.target.getAttribute("data-userid");
+        var videoid = window.location.pathname.slice(window.location.pathname.lastIndexOf('/')+1);
+        var text = e.target.classList.contains("liked");
+        if (text === false){
             $.ajax({
                 type: "post",
-                url: `/userfollowings`,
-                data: { "following":following, "followed":followed},
+                url: `/likes`,
+                data: { "userid":userid, "videoid":videoid},
                 dataType: "json",
                 success: function (data) {
-                    e.target.innerText = "取消关注";
-                    document.getElementById('userfollowerscount').innerText = String(Number(document.getElementById('userfollowerscount').innerText)+1);
-                    layer.msg("已关注用户");
+                    e.target.classList.add("liked");
+                    document.getElementById('likescount').innerText = String(Number(document.getElementById('likescount').innerText)+1);
+                    layer.msg("已赞视频");
                 },
                 error: function (item, err) {
                     console.log(err);
@@ -84,13 +84,13 @@ if (document.getElementById('linkLogout') && document.getElementById('special'))
         } else {
             $.ajax({
                 type: "post",
-                url: `/deleteuserfollowings`,
-                data: { "following":following, "followed":followed},
+                url: `/deletelikes`,
+                data: { "userid":userid, "videoid":videoid},
                 dataType: "json",
                 success: function (data) {
-                    e.target.innerText = "关注";
-                    document.getElementById('userfollowerscount').innerText = String(Number(document.getElementById('userfollowerscount').innerText)-1);
-                    layer.msg("已取消关注用户");
+                    e.target.classList.remove("liked");
+                    document.getElementById('likescount').innerText = String(Number(document.getElementById('likescount').innerText)-1);
+                    layer.msg("已取消赞视频");
                 },
                 error: function (item, err) {
                     console.log(err);

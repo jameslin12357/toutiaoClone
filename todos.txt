@@ -9,12 +9,7 @@ tables
 
 enter data
 
-user x
-video
-logout x
-
-user(new/edit)
-video(new/edit/delete)
+like video
 search
 
 

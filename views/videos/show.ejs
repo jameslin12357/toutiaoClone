@@ -22,10 +22,17 @@
                         <a class="gray mr-5px" href="/topics/<%= results[0][0].topicid %>"><%= results[0][0].title %></a>
 
 <!--                        <span class="gray mr-5px"><%= results[2][0].commentsCount %>评论</span>-->
-                        <span class="gray mr-5px"><%= results[3][0].likesCount %>点赞</span>
+                        <span class="gray mr-5px"><span id="likescount"><%= results[3][0].likesCount %></span>点赞</span>
 
                         <span class="gray"><%= moment(results[0][0].created ).startOf('hour').fromNow() %></span>
+                        <% if (req.session.isAuthenticated === "true") { %>
+                            <% if (results[4].length === 0) { %>
+                                <button type="button" id="buttonLike" class="btn btn-outline-primary btn-sm" data-userid="<%= req.session.id %>">赞</button>
+                            <% } else { %>
+                                    <button type="button" id="buttonLike" class="btn btn-outline-primary btn-sm liked" data-userid="<%= req.session.id %>">赞</button>
+                            <% } %>
 
+                        <% } %>
                     </div>
                     <div class="mb-10">
 
@@ -37,6 +44,7 @@
                             <button type="button" id="buttonDelete" class="btn btn-outline-danger btn-sm" data-userid="<%= req.session.id %>">删除</button>
 
                         <% } %>
+
                     </div>
                 </div>
 
