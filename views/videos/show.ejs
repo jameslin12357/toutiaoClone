@@ -43,11 +43,10 @@
             </div>
         </div>
 
-                    <div class="col-md-8">
                         <div class="mt-30" id="wrapperCard">
-                            <h5><span id="commentsCount"><%= results[2][0].commentsCount %></span>评论</h5>
+                            <h5 class="pl-20"><span id="commentsCount"><%= results[2][0].commentsCount %></span>评论</h5>
                             <% if (req.session.isAuthenticated === "true") { %>
-                                <div class="mt-20" id="formComment">
+                                <div class="mt-20 pl-20" id="formComment">
                                     <img class="profileList mr-5px" src="/images/profile.png">
                                     <input id="inputComment" class="mr-5px pd-10 w-400px" type="text" placeholder="请评论">
                                     <button id="buttonComment" type="button" class="btn btn-outline-primary btn-sm pd-10" data-userid="<%= req.session.id %>">评论</button>
@@ -79,11 +78,12 @@
                             </div>
                         </div>
 
-                    </div>
                 </div>
             </div>
 
+<div id="space">
 
+</div>
 <script
         src="https://code.jquery.com/jquery-3.4.1.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
@@ -93,6 +93,8 @@
 <script src="/layui-v2.5.4/layui/layui.js" charset="utf-8"></script>
 <script src="/javascripts/moment.js"></script>
 <script src="/javascripts/videos/site.js"></script>
-
+<% if (videoUpdated === "true") { %>
+    <script src="/javascripts/videos/videoUpdated.js"></script>
+<% } %>
 </body>
 </html>

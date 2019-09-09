@@ -82,6 +82,15 @@ connection.connect();
 //   });
 // }
 
+for(var i = 0; i < 100; i++) {
+  var randomBody = faker.lorem.sentence();
+  var randomVideoId = 1032;
+  connection.query(`insert into comments (body, userid, videoid) values ('${randomBody}',1008, '${randomVideoId}')`, function (error, results, fields) {
+    if (error) throw error;
+    console.log('The solution is: ', results);
+  });
+}
+
 connection.end();
 
 // users `insert into users (email, username, password) values ('john@yahoo.com','john','john123')`

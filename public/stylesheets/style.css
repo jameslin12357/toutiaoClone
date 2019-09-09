@@ -20,6 +20,14 @@
   margin-top: 10px;
 }
 
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
 .mt-50 {
   margin-top: 50px;
 }
@@ -156,3 +164,26 @@ span.active {
   margin-right: -5px;
 }
 
+.videoDetail {
+  width: 100%;
+}
+
+.mb-5px {
+  margin-bottom: 5px;
+}
+
+.pd-10 {
+  padding: 10px;
+}
+
+.w-400px {
+  width: 400px;
+}
+
+.pl-20 {
+  padding-left: 20px;
+}
+
+#space {
+  height: 150px;
+}

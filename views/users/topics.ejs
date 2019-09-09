@@ -37,11 +37,11 @@
 
                         <div class="card-body flex ai-center">
                             <div class="mr-15">
-                                <img src="<%= results[1][i].src %>" class="card-img-top topicList" alt="...">
+                                <a class="black" href="/topics/<%= results[1][i].id %>"><img src="<%= results[1][i].src %>" class="card-img-top topicList" alt="..."></a>
 
                             </div>
                             <div class="mt-10">
-                                <h5 class="card-title mb-0"><%= results[1][i].title %></h5>
+                                <a class="black" href="/topics/<%= results[1][i].id %>"><h5 class="card-title mb-0"><%= results[1][i].title %></h5></a>
 
 
                                 <div>
@@ -57,6 +57,9 @@
 
         </div>
     </div>
+</div>
+
+<div id="space">
 </div>
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->

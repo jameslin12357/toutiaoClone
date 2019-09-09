@@ -12,6 +12,9 @@ enter data
 user x
 video
 logout x
+
+user(new/edit)
+video(new/edit/delete)
 search
 
 

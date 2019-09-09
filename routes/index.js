@@ -65,7 +65,9 @@ function sessionSetup(req, res, next){
       "id": id,
       "email": email,
       "username": username,
-      "src": src
+      "src": src,
+      "videoUpdated": false,
+      "videoDeleted": false
     }, function(){
       client.quit();
       req.session = {
@@ -74,6 +76,8 @@ function sessionSetup(req, res, next){
         "email": email,
         "username": username,
         "src": src,
+        "videoUpdated": false,
+        "videoDeleted": false
       }
       res.cookie('sid', uuid, { signed: false, maxAge: 60 * 1000, httpOnly: true });
       next();
@@ -264,6 +268,28 @@ router.get('/users4', sessionSetup, function(req, res, next) {
       });
 });
 
+router.get('/comments', sessionSetup, function(req, res, next) {
+  queryDB(`select c.body, c.created, u.id, u.username, u.src from comments c inner join users u on c.userid = u.id where videoid = '${req.query.videoid}' order by created desc limit 10 offset ${req.query.offset};`,
+      function (results) {
+        res.json(results);
+      });
+});
+
+router.post('/comments', sessionSetup, function(req, res, next){
+  if (req.session.isAuthenticated === "false"){
+    res.redirect('/login');
+  } else {
+    queryDB(`insert into comments (body, userid, videoid) values ('${req.body.body}','${req.body.userid}', '${req.body.videoid}')`,
+        function(results){
+          queryDB(`select * from comments order by created desc limit 1`,
+              function(results){
+                res.json(results);
+              });
+
+        });
+  }
+});
+
 
 // whether user is logged in or not display
 // all topics as a board
@@ -393,12 +419,23 @@ router.get('/users/:id', sessionSetup, function(req, res, next){
       //         });}
       //   );
       // }
-      console.log(req.query);
-      res.render('users/show', {
-        title: '用户',
-        req: req,
-        results: results,
-        moment: moment
+      var videoDeleted = "";
+      var client = redis.createClient();
+      client.hgetall(req.cookies.sid, function (err, obj) {
+        videoDeleted = obj["videoDeleted"];
+        if (videoDeleted === "true"){
+          client.HMSET(req.cookies.sid, {
+            "videoDeleted": false
+          });
+        }
+        client.quit();
+        res.render('users/show', {
+          title: '用户',
+          req: req,
+          results: results,
+          moment: moment,
+          videoDeleted: videoDeleted
+        });
       });
     }
   });
@@ -560,6 +597,42 @@ router.get('/users/delete/:id', sessionSetup, function(req, res, next){
           title: '前往',
           req: req,
           moment: moment
+        });
+      });
+    }
+  });
+});
+
+router.get('/videos/delete/:id', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select * from videos v where v.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (req.session.id !== String(results[0].userid)){
+        res.redirect('/403');
+      }
+      queryDBMulti( `delete from videos where id = '${id}'`,function (results) {
+        var client = redis.createClient();
+        client.HMSET(req.cookies.sid, {
+          "videoDeleted": true
+        }, function(){
+          client.quit();
+          res.redirect(`/users/${req.session.id}`);
         });
       });
     }
@@ -728,7 +801,7 @@ router.get('/users/:id/likes', sessionSetup, function(req, res, next){
 
 router.get('/videos/:id', sessionSetup, function(req, res, next){
   var id = req.params.id;
-  queryDBMulti( `select v.id as videoid, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select * from comments where videoid = '${id}';select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';`,function (results) {
+  queryDBMulti( `select v.id as videoid, v.description as videodescription, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select c.body, c.created, u.id, u.username, u.src from comments c inner join users u on c.userid = u.id where videoid = '${id}' order by created desc limit 10;select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';`,function (results) {
     if (results[0].length === 0){
       res.redirect('/404');
     } else {
@@ -743,8 +816,64 @@ router.get('/videos/:id', sessionSetup, function(req, res, next){
       //         });}
       //   );
       // }
+      var videoUpdated = "";
+      var client = redis.createClient();
+      client.hgetall(req.cookies.sid, function (err, obj) {
+        videoUpdated = obj["videoUpdated"];
+        if (videoUpdated === "true"){
+          client.HMSET(req.cookies.sid, {
+            "videoUpdated": false
+          });
+        }
+        client.quit();
+        res.render('videos/show', {
+          title: '视频',
+          req: req,
+          results: results,
+          moment: moment,
+          videoUpdated: videoUpdated
+        });
+      });
+
+
+        // client.HGET(req.cookies.sid, {
+      //   "videoupdated": true
+      // }, function(){
+      //   client.quit();
+      //   res.redirect(`/videos/${id}`);
+      // });
+
+
+    }
+  });
+});
+
+router.get('/videos/:id/edit', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select v.id, v.title, v.description, v.userid from videos v where v.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
       console.log(results);
-      res.render('videos/show', {
+      res.redirect('/404');
+    } else {
+      // if (req.session.isAuthenticated){
+      //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+      //       function(results){
+      //         res.render('topics/show', {
+      //           title: '话题',
+      //           req: req,
+      //           results: results,
+      //           moment: moment
+      //         });}
+      //   );
+      // }
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (req.session.id !== String(results[0].userid)){
+        res.redirect('/403');
+      }
+      console.log(results);
+      res.render('videos/edit', {
         title: '视频',
         req: req,
         results: results,
@@ -753,6 +882,81 @@ router.get('/videos/:id', sessionSetup, function(req, res, next){
     }
   });
 });
+
+router.post('/videos/:id/edit', sessionSetup, function(req, res, next){
+  var id = req.params.id;
+  queryDBMulti( `select v.id, v.title, v.description, v.userid from videos v where v.id = '${id}';`,function (results) {
+    if (results[0].length === 0){
+      res.redirect('/404');
+    } else {
+      if (req.session.isAuthenticated === "false"){
+        res.redirect('/login');
+      }
+      if (req.session.id !== String(results[0].userid)){
+        res.redirect('/403');
+      }
+      var title = req.body.title;
+      var description = req.body.description;
+      var errors = [];
+      if (title.length === 0){
+        errors.push(1);
+      }
+      if (description.length === 0){
+        errors.push(2);
+      }
+      if (errors.length !== 0){
+        res.render('videos/failed',{
+          title: '编辑',
+          req: req,
+          inputs: {
+            "title": title,
+            "description": description
+          },
+          errors: errors,
+          results: results
+        });
+      } else {
+        // clean data and insert into database and return login page with success popup
+        title = title.trim();
+        description = description.trim();
+        queryDB(`update videos set title = '${title}', description = '${description}' where id = '${id}';`,
+            function(results){
+              var client = redis.createClient();
+              client.HMSET(req.cookies.sid, {
+                "videoUpdated": true
+              }, function(){
+                client.quit();
+                res.redirect(`/videos/${id}`);
+              });
+              // queryDBMulti( `select v.id as videoid, v.description as videodescription, v.title as videotitle, v.src as videosrc, v.created, u.id as userid, u.username, u.src as usersrc, t.id as topicid, t.title, t.description, t.src from videos v inner join users u on v.userid = u.id inner join topics t on v.topicid = t.id where v.id = '${id}';select c.body, c.created, u.id, u.username, u.src from comments c inner join users u on c.userid = u.id where videoid = '${id}' order by created desc limit 10;select count(*) as commentsCount from comments where videoid = '${id}';select count(*) as likesCount from likes where videoid = '${id}';`,function (results) {
+              //   if (results[0].length === 0){
+              //     res.redirect('/404');
+              //   } else {
+              //     // if (req.session.isAuthenticated){
+              //     //   queryDB(`select * from topicfollowing where following = '${req.session.id}' and followed = ${req.params.id};`,
+              //     //       function(results){
+              //     //         res.render('topics/show', {
+              //     //           title: '话题',
+              //     //           req: req,
+              //     //           results: results,
+              //     //           moment: moment
+              //     //         });}
+              //     //   );
+              //     // }
+              //     res.render('videos/showEdited', {
+              //       title: '用户',
+              //       req: req,
+              //       results: results,
+              //       moment: moment
+              //     });
+              //   }
+              // });
+            });
+      }
+    }
+  });
+});
+
 
 router.get('/register', sessionSetup, function(req, res, next){
   if (req.session.isAuthenticated === "true"){
